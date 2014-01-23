@@ -112,7 +112,7 @@
              * @constructor
              */
             function Splitter() {
-                this.lengthValue = 5;
+                this.lengthValue = 10;
                 this.initialPosition = { x: 0, y: 0};
                 this.availableLength = {before: 0, after: 0};
                 this.ghostPosition = { x: 0, y: 0};
