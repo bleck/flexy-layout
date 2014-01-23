@@ -112,7 +112,7 @@
              * @constructor
              */
             function Splitter() {
-                this.lengthValue = 10;
+                this.lengthValue = 5;
                 this.initialPosition = { x: 0, y: 0};
                 this.availableLength = {before: 0, after: 0};
                 this.ghostPosition = { x: 0, y: 0};
@@ -220,22 +220,9 @@
                         event.preventDefault();
                     };
 
-                    var dblClickHandler = function(event) {
-                        console.log('double-click activated');
-                        console.log(event.clientX);
-                        this.initialPosition.x = event.clientX;
-                        this.initialPosition.y = event.clientY;
-                        ctrl.movingSplitter = this;
-                        ctrl.toggleHide();
-
-                        //to avoid the block content to be selected when dragging the splitter
-                        event.preventDefault();
-                    }
-
                     ctrl.addBlock(scope.splitter);
 
                     element.bind('mousedown', angular.bind(scope.splitter, mouseDownHandler));
-                    element.bind('dblclick', angular.bind(scope.splitter, dblClickHandler));
 
                     scope.$watch('splitter.ghostPosition.' + ctrl.lengthProperties.position, function (newValue, oldValue) {
                         if (newValue !== oldValue) {
@@ -274,10 +261,11 @@
             this.movingSplitter = null;
 
             var mouseMoveHandler = function (event) {
-                if (this.movingSplitter !== null && this.dblClicked == false) {
-                    var length = 0,
-                        eventProperty = this.lengthProperties.eventProperty,
-                        position = this.lengthProperties.position;
+                var length = 0,
+                    eventProperty = this.lengthProperties.eventProperty,
+                    position = this.lengthProperties.position;
+
+                if (this.movingSplitter !== null) {
                     length = event[eventProperty] - this.movingSplitter.initialPosition[position];
                     if (length < 0) {
                         this.movingSplitter.ghostPosition[position] = (-1) * Math.min(Math.abs(length), this.movingSplitter.availableLength.before);
@@ -292,20 +280,11 @@
                     eventProperty = this.lengthProperties.eventProperty,
                     position = this.lengthProperties.position;
 
-                if (this.movingSplitter !== null && this.dblClicked == false) {
+                if (this.movingSplitter !== null) {
                     length = event[eventProperty] - this.movingSplitter.initialPosition[position];
-
-                    if(length !== 0){
-                        this.moveSplitterLength(this.movingSplitter, length);
-                        this.movingSplitter.ghostPosition[position] = 0;
-
-                        //Reset the toggleHide settings
-                        if(this.hidden){
-                            this.hidden = false;
-                            this.savedLength = 0;
-                        }
-                    }
-                        this.movingSplitter = null;
+                    this.moveSplitterLength(this.movingSplitter, length);
+                    this.movingSplitter.ghostPosition[position] = 0;
+                    this.movingSplitter = null;
                 }
             };
 
@@ -317,33 +296,6 @@
             element.bind('mousemove', function (event) {
                 scope.$apply(angular.bind(self, mouseMoveHandler, event));
             });
-
-            ///// Toggle Hide/Show on Double-Click ////
-            this.hidden = false;
-            this.savedLength = 0;
-            this.dblClicked = false;
-
-            this.toggleHide = function(){
-                this.dblClicked = true;
-                if(this.movingSplitter !== null){
-                    var length = 0,                   
-                        position = this.lengthProperties.position;
-                    if(this.hidden === false){
-                        length =  (-1) * this.movingSplitter.initialPosition[position];
-                        this.savedLength = Math.abs(length);
-                        scope.$apply(this.moveSplitterLength(this.movingSplitter, length));
-                        this.hidden = true;
-                    }
-                    else{
-                        length = this.savedLength;
-                        scope.$apply(this.moveSplitterLength(this.movingSplitter, length));
-                        this.hidden = false;
-                    }
-                    this.movingSplitter.ghostPosition[position] = 0;
-                }
-                this.movingSplitter = null;
-                this.dblClicked = false;
-            }
 
             /////   adding blocks   ////
 
@@ -415,6 +367,7 @@
              * @param length < 0 or > 0 : decrease/increase block size of abs(length) px
              */
             this.moveBlockLength = function (block, length) {
+
                 var
                     blockIndex = typeof block !== 'object' ? block : blocks.indexOf(block),
                     composingBlocks,
@@ -506,7 +459,6 @@
 
                 return toReturn;
             };
-
 
             /**
              * lock/unlock a given block
