@@ -63,9 +63,22 @@
                         event.preventDefault();
                     };
 
+                    var dblClickHandler = function(event) {
+                        console.log('double-click activated');
+                        console.log(event.clientX);
+                        this.initialPosition.x = event.clientX;
+                        this.initialPosition.y = event.clientY;
+                        ctrl.movingSplitter = this;
+                        ctrl.toggleHide();
+
+                        //to avoid the block content to be selected when dragging the splitter
+                        event.preventDefault();
+                    }
+
                     ctrl.addBlock(scope.splitter);
 
                     element.bind('mousedown', angular.bind(scope.splitter, mouseDownHandler));
+                    element.bind('dblclick', angular.bind(scope.splitter, dblClickHandler));
 
                     scope.$watch('splitter.ghostPosition.' + ctrl.lengthProperties.position, function (newValue, oldValue) {
                         if (newValue !== oldValue) {
